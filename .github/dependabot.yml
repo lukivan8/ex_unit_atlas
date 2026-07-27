@@ -6,6 +6,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: ex_doc
+        versions:
+          - ">= 0.32.0"
 
   - package-ecosystem: github-actions
     directory: /
