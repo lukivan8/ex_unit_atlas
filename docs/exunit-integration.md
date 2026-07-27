@@ -26,7 +26,8 @@ structure. Atlas uses the following fields:
 - `tags.describe`
 
 Captured logs are available through `test.logs` in the verified runtime, but
-they are deliberately excluded from report schema version 1.
+they are deliberately excluded from the report. Schema version 2 uses explicit
+`show` items instead, avoiding unrelated Logger noise and implicit capture.
 
 ## Test ownership
 

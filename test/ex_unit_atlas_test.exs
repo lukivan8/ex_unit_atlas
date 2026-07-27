@@ -47,6 +47,41 @@ defmodule ExUnitAtlasTest do
              ExUnitAtlas.Recorder.take({context.module, context.test})
   end
 
+  test "show records a bounded preview and returns the exact value", context do
+    value = {:ok, %{id: 42, status: :completed}}
+
+    assert show(value, "Created sale") === value
+
+    assert [
+             %{
+               type: :show,
+               name: "Created sale",
+               value: "{:ok, %{id: 42, status: :completed}}",
+               status: :passed,
+               duration_us: 0,
+               error: nil
+             }
+           ] = ExUnitAtlas.Recorder.take({context.module, context.test})
+  end
+
+  test "show limits large previews", context do
+    value = %ExUnitAtlas.Test.LongInspect{}
+    assert show(value, "Large list") === value
+
+    [item] = ExUnitAtlas.Recorder.take({context.module, context.test})
+    assert item.type == :show
+    assert String.length(item.value) == 2_001
+    assert String.ends_with?(item.value, "…")
+  end
+
+  test "a broken Inspect implementation does not fail the test", context do
+    value = %ExUnitAtlas.Test.BrokenInspect{}
+    assert show(value, "Custom value") === value
+
+    [item] = ExUnitAtlas.Recorder.take({context.module, context.test})
+    assert item.value == "#Inspect.Error<preview unavailable>"
+  end
+
   test "records and reraises an error with its original stacktrace", context do
     assert_raise RuntimeError, "boom", fn ->
       step "explodes" do
@@ -73,6 +108,7 @@ defmodule ExUnitAtlasTest do
   test "rejects invalid and nested names" do
     assert_raise ArgumentError, ~r/must not be empty/, fn -> step("  ", do: :ok) end
     assert_raise ArgumentError, ~r/must be a string/, fn -> check(:atom, do: :ok) end
+    assert_raise ArgumentError, ~r/must not be empty/, fn -> show(:value, " ") end
 
     assert_raise ArgumentError, ~r/nested/, fn ->
       step "outer" do
@@ -81,12 +117,19 @@ defmodule ExUnitAtlasTest do
         end
       end
     end
+
+    assert_raise ArgumentError, ~r/nested/, fn ->
+      step "outer" do
+        show(:value, "Inside a step")
+      end
+    end
   end
 
   test "works as a no-op when recorder is unavailable" do
     pid = Process.whereis(ExUnitAtlas.Recorder)
     GenServer.stop(pid)
     assert step("still runs", do: :result) == :result
+    assert show({:still, :runs}, "Still returns") == {:still, :runs}
     assert_raise RuntimeError, "original", fn -> check("still fails", do: raise("original")) end
   end
 end

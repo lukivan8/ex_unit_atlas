@@ -32,6 +32,7 @@ defmodule ExUnitAtlas.HTML do
       .type { display: inline-block; width: 70px; font-size: 12px; text-transform: uppercase; }
       details { margin: 10px 0 0 24px; font-size: 13px; }
       .error { margin: 8px 0; padding: 8px 12px; border-left: 3px solid #c62828; background: #fff5f5; }
+      .shown-value { margin: 4px 0 8px 90px; padding: 8px 12px; background: #f6f8fa; overflow: auto; }
       pre { margin-bottom: 0; white-space: pre-wrap; font-size: 12px; }
     </style>
   </head>
@@ -69,6 +70,9 @@ defmodule ExUnitAtlas.HTML do
                         <span class="mark <%= item["status"] %>"><%= status_mark.(item["status"]) %></span>
                         <span class="type"><%= type_label.(item["type"]) %></span>
                         <span><%= h.(item["name"]) %></span>
+                        <%= if Map.has_key?(item, "value") do %>
+                          <pre class="shown-value"><%= h.(item["value"]) %></pre>
+                        <% end %>
                         <%= for error <- errors.(item["error"]) do %>
                           <%= error_block.(error) %>
                         <% end %>
@@ -164,6 +168,7 @@ defmodule ExUnitAtlas.HTML do
   defp status_label(_status), do: "Failed"
   defp type_label("step"), do: "step"
   defp type_label("check"), do: "check"
+  defp type_label("show"), do: "data"
   defp type_label(type), do: escape(type)
 
   defp render_error(error) do

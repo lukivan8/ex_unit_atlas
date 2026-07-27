@@ -1,14 +1,14 @@
 # Architecture
 
 ExUnit Atlas is intentionally small. The public API consists of
-`ExUnitAtlas`, `step/2`, `check/2`, and the formatter users register with
-ExUnit.
+`ExUnitAtlas`, `step/2`, `show/2`, `check/2`, and the formatter users register
+with ExUnit.
 
 ## Data flow
 
 ```text
 test process
-  └─ step/check
+  └─ step/show/check
        └─ Recorder
             └─ Formatter receives test_finished
                  └─ Report normalization
@@ -20,8 +20,9 @@ test process
 
 ### `ExUnitAtlas`
 
-Provides `use ExUnitAtlas`, imports the two macros, and registers a setup
-callback that derives the internal owner key from the public ExUnit context.
+Provides `use ExUnitAtlas`, imports the public instrumentation API, and
+registers a setup callback that derives the internal owner key from the public
+ExUnit context.
 
 Each macro:
 
@@ -30,6 +31,9 @@ Each macro:
 3. executes the block exactly once;
 4. records success or failure;
 5. returns the original result or re-raises the original failure.
+
+`show/2` is a regular pipe-friendly function. It creates a bounded `inspect`
+preview, records that string, and returns the original term unchanged.
 
 ### Recorder
 
@@ -72,6 +76,7 @@ user-controlled strings are escaped.
 
 - Instrumented blocks execute exactly once.
 - Return values are not transformed.
+- Shown terms are reduced to bounded strings before entering recorder state.
 - `error`, `exit`, and `throw` preserve kind, reason, and stacktrace.
 - Items remain ordered and isolated between async tests.
 - Reports are written after both successful and failed suites.

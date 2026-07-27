@@ -27,6 +27,8 @@ mix hex.build
 - Never change ExUnit assertion or exit semantics.
 - Preserve `error`, `exit`, and `throw` kind, reason, and stacktrace.
 - Execute every instrumented block exactly once.
+- Preserve the exact value passed through `show/2`.
+- Keep shown previews bounded and never store the original term.
 - Never mix events from concurrent tests.
 - Keep schema output deterministic and JSON-safe.
 - Escape all user-controlled HTML.

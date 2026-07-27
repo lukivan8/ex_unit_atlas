@@ -25,9 +25,13 @@ defmodule ExUnitAtlas.IntegrationTest do
     assert report =~ ~s("name": "A2")
     assert report =~ ~s("name": "B1")
     assert report =~ ~s("name": "B2")
+    assert report =~ ~s("name": "A data")
+    assert report =~ ~s("value": "%{owner: :a, stage: :prepared}")
     assert html =~ "AtlasIntegrationFixture.AsyncA"
     assert html =~ "A1"
     assert html =~ "B2"
+    assert html =~ "A data"
+    assert html =~ "%{owner: :a, stage: :prepared}"
 
     {_, 0} =
       System.cmd("python3", ["-c", "import json,sys; json.load(open(sys.argv[1]))", @report])

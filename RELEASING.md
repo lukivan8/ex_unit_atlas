@@ -47,6 +47,6 @@ After publication:
 1. Open `https://hex.pm/packages/ex_unit_atlas`.
 2. Open `https://hexdocs.pm/ex_unit_atlas`.
 3. In a clean project, add
-   `{:ex_unit_atlas, "~> 0.1.0", only: :test, runtime: false}` and follow the
+   `{:ex_unit_atlas, "~> 0.2.0", only: :test, runtime: false}` and follow the
    README.
-4. Tag the exact published commit as `v0.1.0`.
+4. Tag the exact published commit with `v` followed by the published version.
