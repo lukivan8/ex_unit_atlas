@@ -148,6 +148,37 @@ end
 The report becomes valuable when names explain behavior—not when every line of
 test code receives a label.
 
+## Atlas documents itself
+
+ExUnit Atlas uses its own formatter and public API in
+[`test/dogfood_test.exs`](test/dogfood_test.exs). Running the repository's
+normal test suite regenerates a real Atlas report:
+
+```console
+mix test
+open ex_unit_atlas_report/index.html
+```
+
+The self-hosted scenario follows an order through a multi-stage calculation.
+Its report reads as:
+
+```text
+Public instrumentation API
+└─ ✓ follows an order through a multi-stage data flow
+   ├─ ✓ STEP   Create an order with two line items
+   ├─ ✓ DATA   Order before discount
+   │           %{items: [...], total: 4200, discount: 0}
+   ├─ ✓ STEP   Apply a ten percent discount
+   ├─ ✓ DATA   Order after discount
+   │           %{items: [...], total: 3780, discount: 420}
+   ├─ ✓ CHECK  The discount is recorded explicitly
+   ├─ ✓ CHECK  The final total includes the discount
+   └─ ✓ CHECK  The README example stays aligned with the executable scenario
+```
+
+The final check deliberately verifies the labels in this README, so the public
+example and executable scenario cannot drift silently.
+
 ## Runtime semantics
 
 - Instrumented blocks execute exactly once.

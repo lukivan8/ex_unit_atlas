@@ -5,6 +5,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+- Run ExUnit Atlas against its own test suite as executable documentation.
+- Recover the formatter when the recorder becomes unavailable during a suite.
+
 ## 0.2.0 - 2026-07-27
 
 - Add pipe-friendly `show(value, label)` for recording intermediate data.
