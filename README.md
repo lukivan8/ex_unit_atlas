@@ -1,10 +1,15 @@
 # ExUnit Atlas
 
 [![Quality](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/ex_unit_atlas.svg)](https://hex.pm/packages/ex_unit_atlas)
+[![HexDocs](https://img.shields.io/badge/HexDocs-documentation-blue.svg)](https://hexdocs.pm/ex_unit_atlas)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lukivan8/ex_unit_atlas/blob/main/LICENSE)
 
 ExUnit Atlas turns ordinary ExUnit tests into a readable map of the behavior
 your application guarantees.
+
+Published on [Hex.pm](https://hex.pm/packages/ex_unit_atlas) with API and guides
+available on [HexDocs](https://hexdocs.pm/ex_unit_atlas).
 
 It is not a new test framework. ExUnit remains responsible for tests,
 assertions, failures, stacktraces, terminal output, and exit codes. Atlas adds
