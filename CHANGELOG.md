@@ -9,6 +9,7 @@ uses [Semantic Versioning](https://semver.org/).
 - Recover the formatter when the recorder becomes unavailable during a suite.
 - Verify and upload the generated HTML and JSON report in GitHub Actions.
 - Publish the latest self-hosted HTML report through GitHub Pages.
+- Keep the public Pages report focused on the executable dogfood scenario.
 
 ## 0.2.0 - 2026-07-27
 
