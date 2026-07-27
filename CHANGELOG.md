@@ -8,6 +8,7 @@ uses [Semantic Versioning](https://semver.org/).
 - Run ExUnit Atlas against its own test suite as executable documentation.
 - Recover the formatter when the recorder becomes unavailable during a suite.
 - Verify and upload the generated HTML and JSON report in GitHub Actions.
+- Publish the latest self-hosted HTML report through GitHub Pages.
 
 ## 0.2.0 - 2026-07-27
 

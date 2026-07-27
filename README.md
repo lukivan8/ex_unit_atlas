@@ -3,6 +3,7 @@
 [![Quality](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml)
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_unit_atlas.svg)](https://hex.pm/packages/ex_unit_atlas)
 [![HexDocs](https://img.shields.io/badge/HexDocs-documentation-blue.svg)](https://hexdocs.pm/ex_unit_atlas)
+[![Live report](https://img.shields.io/badge/live-report-brightgreen.svg)](https://lukivan8.github.io/ex_unit_atlas/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lukivan8/ex_unit_atlas/blob/main/LICENSE)
 
 ExUnit Atlas turns ordinary ExUnit tests into a readable map of the behavior
@@ -23,6 +24,8 @@ ex_unit_atlas_report/
 
 The HTML report is a self-contained document with no server, JavaScript,
 external assets, or frontend build step.
+
+**[Open the live self-hosted HTML report →](https://lukivan8.github.io/ex_unit_atlas/)**
 
 ## Why Atlas?
 
@@ -182,7 +185,8 @@ example and executable scenario cannot drift silently.
 The CI workflow verifies both generated files and uploads
 `ex_unit_atlas_report/` as the `ex-unit-atlas-report` artifact for every
 non-cancelled run, including failed test suites that successfully finish
-report generation.
+report generation. Successful pushes to `main` also publish the same HTML as
+the [live GitHub Pages report](https://lukivan8.github.io/ex_unit_atlas/).
 
 ## Runtime semantics
 
