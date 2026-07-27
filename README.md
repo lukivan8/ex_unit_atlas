@@ -153,17 +153,21 @@ test code receives a label.
 
 ## Atlas documents itself
 
-ExUnit Atlas uses its own formatter and public API in
-[`test/dogfood_test.exs`](test/dogfood_test.exs). Running the repository's
-normal test suite regenerates a real Atlas report:
+ExUnit Atlas uses its own formatter and public API throughout its internal test
+suite. Running the repository's normal tests regenerates a real Atlas report:
 
 ```console
 mix test
 open ex_unit_atlas_report/index.html
 ```
 
-The self-hosted scenario follows an order through a multi-stage calculation.
-Its report reads as:
+The report is a complete, navigable audit of the guarantees the library makes:
+public instrumentation semantics, failure preservation, async-safe recording,
+strict JSON encoding, report normalization, static HTML rendering, and the
+real ExUnit formatter lifecycle.
+
+[`test/dogfood_test.exs`](test/dogfood_test.exs) remains one end-to-end consumer
+scenario. It follows an order through a multi-stage calculation and reads as:
 
 ```text
 Public instrumentation API
@@ -180,13 +184,14 @@ Public instrumentation API
 ```
 
 The final check deliberately verifies the labels in this README, so the public
-example and executable scenario cannot drift silently.
+example and executable scenario cannot drift silently. It is one section in
+the full report, not a curated replacement for the internal suite.
 
 The CI workflow verifies both generated files and uploads
 `ex_unit_atlas_report/` as the `ex-unit-atlas-report` artifact for every
 non-cancelled run, including failed test suites that successfully finish
-report generation. Successful pushes to `main` then regenerate the focused
-dogfood scenario and publish it as the
+report generation. Successful pushes to `main` publish that same complete
+internal-suite audit as the
 [live GitHub Pages report](https://lukivan8.github.io/ex_unit_atlas/).
 
 ## Runtime semantics

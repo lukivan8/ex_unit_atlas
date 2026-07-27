@@ -1,5 +1,6 @@
 defmodule ExUnitAtlas.IntegrationTest do
   use ExUnit.Case, async: false
+  use ExUnitAtlas
 
   @fixture Path.expand("fixtures/integration", __DIR__)
   @report Path.join(@fixture, "ex_unit_atlas_report/report.json")
@@ -11,82 +12,132 @@ defmodule ExUnitAtlas.IntegrationTest do
     :ok
   end
 
-  test "real ExUnit formatter associates interleaved async tests and writes valid JSON" do
-    {output, status} = run_fixture("test/passing.exs")
+  describe "Real ExUnit formatter lifecycle" do
+    test "associates interleaved async tests and writes both report formats" do
+      {output, status} =
+        step "Run a genuinely interleaved async fixture in a child ExUnit suite" do
+          run_fixture("test/passing.exs")
+        end
 
-    assert status == 0, output
-    assert output =~ "3 tests, 0 failures"
-    report = File.read!(@report)
-    html = File.read!(@html)
+      status
+      |> show("Child suite exit status")
 
-    assert report =~ ~s("module": "AtlasIntegrationFixture.AsyncA")
-    assert report =~ ~s("module": "AtlasIntegrationFixture.AsyncB")
-    assert report =~ ~s("name": "A1")
-    assert report =~ ~s("name": "A2")
-    assert report =~ ~s("name": "B1")
-    assert report =~ ~s("name": "B2")
-    assert report =~ ~s("name": "A data")
-    assert report =~ ~s("value": "%{owner: :a, stage: :prepared}")
-    assert html =~ "AtlasIntegrationFixture.AsyncA"
-    assert html =~ "A1"
-    assert html =~ "B2"
-    assert html =~ "A data"
-    assert html =~ "%{owner: :a, stage: :prepared}"
+      {report, html} =
+        step "Read the JSON and HTML produced by the child formatter" do
+          {File.read!(@report), File.read!(@html)}
+        end
 
-    {_, 0} =
-      System.cmd("python3", ["-c", "import json,sys; json.load(open(sys.argv[1]))", @report])
-  end
+      check "The child suite passes while keeping the standard CLI formatter" do
+        assert status == 0, output
+        assert output =~ "3 tests, 0 failures"
+      end
 
-  test "failed suite keeps non-zero exit status and still writes the report" do
-    {output, status} = run_fixture("test/failing.exs")
+      check "Interleaved async tests retain independent ordered items" do
+        assert report =~ ~s("module": "AtlasIntegrationFixture.AsyncA")
+        assert report =~ ~s("module": "AtlasIntegrationFixture.AsyncB")
+        assert report =~ ~s("name": "A1")
+        assert report =~ ~s("name": "A2")
+        assert report =~ ~s("name": "B1")
+        assert report =~ ~s("name": "B2")
+      end
 
-    assert status != 0
-    assert output =~ "Assertion with == failed"
-    assert output =~ "test/failing.exs:7"
+      check "Shown data is present in JSON and HTML" do
+        assert report =~ ~s("name": "A data")
+        assert report =~ ~s("value": "%{owner: :a, stage: :prepared}")
+        assert html =~ "AtlasIntegrationFixture.AsyncA"
+        assert html =~ "A1"
+        assert html =~ "B2"
+        assert html =~ "A data"
+        assert html =~ "%{owner: :a, stage: :prepared}"
+      end
 
-    report = File.read!(@report)
-    html = File.read!(@html)
-    assert report =~ ~s("status": "failed")
-    assert report =~ ~s("name": "Expected business rule")
-    assert report =~ "Assertion with == failed"
-    assert report =~ "test/failing.exs:7"
-    assert html =~ "Expected business rule"
-    assert html =~ "Assertion with == failed"
-    assert html =~ "test/failing.exs:7"
+      check "The generated report parses as standard JSON" do
+        assert_json_parses(@report)
+      end
+    end
 
-    {_, 0} =
-      System.cmd("python3", ["-c", "import json,sys; json.load(open(sys.argv[1]))", @report])
-  end
+    test "keeps a failed suite non-zero while still writing its report" do
+      {output, status} =
+        step "Run an assertion failure in a child ExUnit suite" do
+          run_fixture("test/failing.exs")
+        end
 
-  test "empty suite writes an empty report" do
-    {output, status} = run_fixture("test/empty.exs")
-    assert status == 0, output
+      status
+      |> show("Failed child suite exit status")
 
-    report = File.read!(@report)
-    html = File.read!(@html)
-    assert report =~ ~s("total": 0)
-    assert report =~ ~s("tests": [])
-    assert html =~ "No tests were run."
-  end
+      {report, html} =
+        step "Read the reports left by the failed child suite" do
+          {File.read!(@report), File.read!(@html)}
+        end
 
-  test "normalizes step, outside-block and setup failures" do
-    {output, status} = run_fixture("test/failure_modes.exs")
-    assert status != 0
-    assert output =~ "3 tests, 3 failures"
+      check "Atlas preserves ExUnit failure semantics and source location" do
+        assert status != 0
+        assert output =~ "Assertion with == failed"
+        assert output =~ "test/failing.exs:7"
+      end
 
-    report = File.read!(@report)
-    html = File.read!(@html)
-    assert report =~ "step boom"
-    assert report =~ "outside boom"
-    assert report =~ "setup boom"
-    assert report =~ ~s("name": "Exploding operation")
-    assert report =~ ~s("items": [])
-    assert html =~ "step boom"
-    assert html =~ "outside boom"
-    assert html =~ "setup boom"
+      check "The failed item and diagnostic appear in both report formats" do
+        assert report =~ ~s("status": "failed")
+        assert report =~ ~s("name": "Expected business rule")
+        assert report =~ "Assertion with == failed"
+        assert report =~ "test/failing.exs:7"
+        assert html =~ "Expected business rule"
+        assert html =~ "Assertion with == failed"
+        assert html =~ "test/failing.exs:7"
+      end
 
-    {_, 0} =
-      System.cmd("python3", ["-c", "import json,sys; json.load(open(sys.argv[1]))", @report])
+      check "A report from a failed suite remains valid JSON" do
+        assert_json_parses(@report)
+      end
+    end
+
+    test "writes useful empty reports" do
+      {output, status} =
+        step "Run an empty child ExUnit suite" do
+          run_fixture("test/empty.exs")
+        end
+
+      {report, html} =
+        step "Read the empty suite reports" do
+          {File.read!(@report), File.read!(@html)}
+        end
+
+      check "An empty suite succeeds and reports zero tests" do
+        assert status == 0, output
+        assert report =~ ~s("total": 0)
+        assert report =~ ~s("tests": [])
+        assert html =~ "No tests were run."
+      end
+    end
+
+    test "normalizes failures inside steps, outside instrumentation, and setup" do
+      {output, status} =
+        step "Run three distinct child-suite failure modes" do
+          run_fixture("test/failure_modes.exs")
+        end
+
+      {report, html} =
+        step "Read reports containing all failure modes" do
+          {File.read!(@report), File.read!(@html)}
+        end
+
+      check "Every failure mode remains visible to ExUnit and Atlas" do
+        assert status != 0
+        assert output =~ "3 tests, 3 failures"
+        assert report =~ "step boom"
+        assert report =~ "outside boom"
+        assert report =~ "setup boom"
+        assert report =~ ~s("name": "Exploding operation")
+        assert report =~ ~s("items": [])
+        assert html =~ "step boom"
+        assert html =~ "outside boom"
+        assert html =~ "setup boom"
+      end
+
+      check "The multi-failure report remains valid JSON" do
+        assert_json_parses(@report)
+      end
+    end
   end
 
   defp run_fixture(file) do
@@ -95,5 +146,10 @@ defmodule ExUnitAtlas.IntegrationTest do
       env: [{"MIX_ENV", "test"}],
       stderr_to_stdout: true
     )
+  end
+
+  defp assert_json_parses(path) do
+    assert {_, 0} =
+             System.cmd("python3", ["-c", "import json,sys; json.load(open(sys.argv[1]))", path])
   end
 end

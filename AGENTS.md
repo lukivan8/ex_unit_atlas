@@ -39,5 +39,10 @@ Formatter integration behavior belongs in the isolated fixture suite under
 `test/fixtures/integration`. Failing suites must be tested as child OS
 processes.
 
+Every root test module must use `ExUnitAtlas` and organize its guarantees into
+meaningful behavior sections. Use `step`, `show`, and `check` to make the full
+suite useful as a generated audit. A deliberately uninstrumented integration
+fixture is allowed only when it tests coexistence with ordinary ExUnit tests.
+
 Do not publish to Hex, create releases, or push branches unless the user
 explicitly requests it.
