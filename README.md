@@ -179,6 +179,11 @@ Public instrumentation API
 The final check deliberately verifies the labels in this README, so the public
 example and executable scenario cannot drift silently.
 
+The CI workflow verifies both generated files and uploads
+`ex_unit_atlas_report/` as the `ex-unit-atlas-report` artifact for every
+non-cancelled run, including failed test suites that successfully finish
+report generation.
+
 ## Runtime semantics
 
 - Instrumented blocks execute exactly once.
