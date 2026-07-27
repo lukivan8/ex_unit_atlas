@@ -42,6 +42,9 @@ jobs:
           path: ex_unit_atlas_report/
           if-no-files-found: error
           retention-days: 14
+      - name: Generate focused live example
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: mix test test/dogfood_test.exs
       - name: Prepare live report for GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v5
