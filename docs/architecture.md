@@ -85,10 +85,12 @@ user-controlled strings are escaped.
 ## Dogfooding
 
 The repository registers `ExUnitAtlas.Formatter` in its own
-`test/test_helper.exs`. The scenario in `test/dogfood_test.exs` exercises
-`step`, `show`, and `check` as a consuming project would, and regenerates the
-root `ex_unit_atlas_report/` on every test run.
+`test/test_helper.exs`, and every root test module uses `ExUnitAtlas`.
+Low-level tests describe their setup with `step`, expose relevant intermediate
+state with `show`, and state each invariant with `check`. This makes the
+generated report a complete audit of the library rather than a curated demo.
 
-This is intentionally separate from lower-level unit tests. It provides an
-executable public example while keeping recorder and formatter internals
-covered by focused tests.
+The scenario in `test/dogfood_test.exs` remains an end-to-end example of how a
+consuming project follows data through a business flow. The isolated
+`AtlasIntegrationFixture.PlainTest` intentionally does not use Atlas because
+it verifies that instrumented and uninstrumented ExUnit tests can coexist.

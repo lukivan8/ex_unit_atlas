@@ -1,86 +1,113 @@
 defmodule ExUnitAtlas.RecorderTest do
   use ExUnit.Case, async: false
+  use ExUnitAtlas
 
   alias ExUnitAtlas.Recorder
 
   setup do
     case Recorder.start_link() do
       {:ok, pid} ->
-        on_exit(fn ->
-          try do
-            GenServer.stop(pid)
-          catch
-            :exit, _ -> :ok
-          end
-        end)
+        Process.unlink(pid)
 
       {:error, {:already_started, _pid}} ->
-        Recorder.reset()
+        :ok
     end
 
     :ok
   end
 
-  test "isolates and orders interleaved owners repeatedly" do
-    for iteration <- 1..50 do
-      owner_a = {Module.concat(["A#{iteration}"]), :"test same name"}
-      owner_b = {Module.concat(["B#{iteration}"]), :"test same name"}
-      parent = self()
+  describe "Async-safe event recording" do
+    test "isolates and orders interleaved owners repeatedly" do
+      result =
+        for iteration <- 1..50 do
+          owner_a = {Module.concat(["A#{iteration}"]), :"test same name"}
+          owner_b = {Module.concat(["B#{iteration}"]), :"test same name"}
+          parent = self()
 
-      tasks =
-        for {owner, prefix} <- [{owner_a, "A"}, {owner_b, "B"}] do
-          Task.async(fn ->
-            Recorder.start_item(owner, :step, "#{prefix}1", System.monotonic_time())
-            send(parent, {:started, iteration, prefix})
+          tasks =
+            for {owner, prefix} <- [{owner_a, "A"}, {owner_b, "B"}] do
+              Task.async(fn ->
+                Recorder.start_item(owner, :step, "#{prefix}1", System.monotonic_time())
+                send(parent, {:started, iteration, prefix})
 
-            receive do
-              :continue -> :ok
+                receive do
+                  :continue -> :ok
+                end
+
+                Recorder.finish_item(owner, :passed, 1, nil)
+                Recorder.start_item(owner, :check, "#{prefix}2", System.monotonic_time())
+                Recorder.finish_item(owner, :passed, 1, nil)
+              end)
             end
 
-            Recorder.finish_item(owner, :passed, 1, nil)
-            Recorder.start_item(owner, :check, "#{prefix}2", System.monotonic_time())
-            Recorder.finish_item(owner, :passed, 1, nil)
-          end)
+          assert_receive {:started, ^iteration, _}
+          assert_receive {:started, ^iteration, _}
+          Enum.each(tasks, &send(&1.pid, :continue))
+          Task.await_many(tasks)
+
+          names_a = Enum.map(Recorder.take(owner_a), & &1.name)
+          names_b = Enum.map(Recorder.take(owner_b), & &1.name)
+          state_empty? = Recorder.state() == %{}
+
+          assert names_a == ["A1", "A2"]
+          assert names_b == ["B1", "B2"]
+          assert state_empty?
+
+          %{a: names_a, b: names_b, state_empty?: state_empty?}
         end
 
-      assert_receive {:started, ^iteration, _}
-      assert_receive {:started, ^iteration, _}
-      Enum.each(tasks, &send(&1.pid, :continue))
-      Task.await_many(tasks)
+      %{iterations: length(result), final_iteration: List.last(result)}
+      |> show("Concurrent recorder stress result")
 
-      assert Enum.map(Recorder.take(owner_a), & &1.name) == ["A1", "A2"]
-      assert Enum.map(Recorder.take(owner_b), & &1.name) == ["B1", "B2"]
-      assert Recorder.state() == %{}
+      check "Fifty interleaved pairs keep independent, ordered histories" do
+        assert length(result) == 50
+        assert Enum.all?(result, &(&1.a == ["A1", "A2"]))
+        assert Enum.all?(result, &(&1.b == ["B1", "B2"]))
+        assert Enum.all?(result, & &1.state_empty?)
+      end
     end
-  end
 
-  test "finalizes an open item as interrupted and clears it" do
-    owner = {__MODULE__, :"test interrupted"}
-    Recorder.start_item(owner, :step, "open", System.monotonic_time())
+    test "finalizes an open item as interrupted and clears it" do
+      owner = {__MODULE__, :"test interrupted"}
+      Recorder.start_item(owner, :step, "open", System.monotonic_time())
 
-    assert [%{name: "open", status: :interrupted, error: :test_failed}] =
-             Recorder.take(owner, :test_failed)
+      items = Recorder.take(owner, :test_failed)
+      state_empty? = Recorder.state() == %{}
 
-    assert Recorder.state() == %{}
-  end
+      items
+      |> Enum.map(&Map.take(&1, [:name, :status, :error]))
+      |> show("Finalized interrupted item")
 
-  test "orders show items with steps and checks" do
-    owner = {__MODULE__, :"test data flow"}
+      check "A test failure closes its open item and releases recorder state" do
+        assert [%{name: "open", status: :interrupted, error: :test_failed}] = items
+        assert state_empty?
+      end
+    end
 
-    Recorder.start_item(owner, :step, "Create sale", System.monotonic_time())
-    Recorder.finish_item(owner, :passed, 10, nil)
-    Recorder.record_show(owner, "Created sale", "%{id: 42}")
-    Recorder.start_item(owner, :check, "Sale is completed", System.monotonic_time())
-    Recorder.finish_item(owner, :passed, 5, nil)
+    test "orders show items with steps and checks" do
+      owner = {__MODULE__, :"test data flow"}
 
-    items = Recorder.take(owner)
+      Recorder.start_item(owner, :step, "Create sale", System.monotonic_time())
+      Recorder.finish_item(owner, :passed, 10, nil)
+      Recorder.record_show(owner, "Created sale", "%{id: 42}")
+      Recorder.start_item(owner, :check, "Sale is completed", System.monotonic_time())
+      Recorder.finish_item(owner, :passed, 5, nil)
 
-    assert Enum.map(items, &{&1.sequence, &1.type, &1.name}) == [
-             {0, :step, "Create sale"},
-             {1, :show, "Created sale"},
-             {2, :check, "Sale is completed"}
-           ]
+      items = Recorder.take(owner)
+      ordered_items = Enum.map(items, &{&1.sequence, &1.type, &1.name})
 
-    assert Enum.at(items, 1).value == "%{id: 42}"
+      ordered_items
+      |> show("Recorded data-flow order")
+
+      check "Steps, shown data, and checks share one stable sequence" do
+        assert ordered_items == [
+                 {0, :step, "Create sale"},
+                 {1, :show, "Created sale"},
+                 {2, :check, "Sale is completed"}
+               ]
+
+        assert Enum.at(items, 1).value == "%{id: 42}"
+      end
+    end
   end
 end
