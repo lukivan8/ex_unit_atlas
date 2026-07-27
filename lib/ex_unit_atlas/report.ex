@@ -13,7 +13,7 @@ defmodule ExUnitAtlas.Report do
     passed = Enum.count(tests, &(&1["status"] == "passed"))
 
     %{
-      "schema_version" => 1,
+      "schema_version" => 2,
       "generated_at" => generated_at |> DateTime.truncate(:second) |> DateTime.to_iso8601(),
       "summary" => %{
         "total" => length(tests),
@@ -62,13 +62,18 @@ defmodule ExUnitAtlas.Report do
   defp normalize_file(file), do: file |> to_string() |> Path.relative_to_cwd()
 
   defp normalize_item(item) do
-    %{
+    normalized = %{
       "type" => Atom.to_string(item.type),
       "name" => item.name,
       "status" => Atom.to_string(item.status),
       "duration_us" => item.duration_us,
       "error" => normalize_error(item.error)
     }
+
+    case Map.fetch(item, :value) do
+      {:ok, value} -> Map.put(normalized, "value", value)
+      :error -> normalized
+    end
   end
 
   defp normalize_state(nil), do: nil

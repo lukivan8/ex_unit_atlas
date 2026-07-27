@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-07-21T13:07:20Z",
-  "schema_version": 1,
+  "schema_version": 2,
   "summary": {
     "duration_us": 120,
     "failed": 0,
@@ -20,6 +20,14 @@
           "name": "Configure fiscalization for cash payments only",
           "status": "passed",
           "type": "step"
+        },
+        {
+          "duration_us": 0,
+          "error": null,
+          "name": "Configured storage",
+          "status": "passed",
+          "type": "show",
+          "value": "%{fiscalization_type: :only_cash}"
         },
         {
           "duration_us": 34,

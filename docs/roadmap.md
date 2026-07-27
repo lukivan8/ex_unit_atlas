@@ -3,18 +3,19 @@
 ExUnit Atlas 0.1 focuses on one complete path:
 
 ```text
-ExUnit → step/check → normalized report → JSON and static HTML
+ExUnit → step/show/check → normalized report → JSON and static HTML
 ```
 
 The roadmap is intentionally conservative. New features should make behavior
 reports clearer without changing the semantics of ordinary ExUnit tests.
 
-## Current release: 0.1
+## Current release: 0.2
 
 - Named `step/2` and `check/2` blocks
+- Pipe-friendly, bounded `show/2` data previews
 - Async-safe event ownership
 - Preserved ExUnit failures and stacktraces
-- Stable JSON schema version 1
+- Versioned JSON schema
 - Minimal static HTML report
 - Reports for passing and failing suites
 - Zero runtime dependencies

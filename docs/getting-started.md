@@ -8,7 +8,7 @@ ExUnit Atlas to an existing project without guessing.
 1. Add this dependency to the project's `mix.exs`:
 
    ```elixir
-   {:ex_unit_atlas, "~> 0.1.0", only: :test, runtime: false}
+   {:ex_unit_atlas, "~> 0.2.0", only: :test, runtime: false}
    ```
 
 2. Run `mix deps.get`.
@@ -37,14 +37,16 @@ ExUnit Atlas to an existing project without guessing.
    If the project uses a case template such as `MyApp.DataCase`, add
    `use ExUnitAtlas` after that template instead.
 
-5. Wrap meaningful preparation or actions in `step`, and guaranteed outcomes
-   in `check`. Keep existing `assert` and `refute` expressions:
+5. Wrap meaningful preparation or actions in `step`, display important
+   intermediate data with `show`, and put guaranteed outcomes in `check`. Keep
+   existing `assert` and `refute` expressions:
 
    ```elixir
    result =
      step "Perform the business action" do
        perform_action()
      end
+     |> show("Action result")
 
    check "The business rule holds" do
      assert result.status == :completed
@@ -82,14 +84,16 @@ runtime configuration.
 ## Important behavior
 
 - Keep the standard ExUnit CLI formatter in the formatter list.
-- Do not nest `step` or `check`.
+- Do not nest `step`, `show`, or `check`.
 - Names must be non-empty strings.
 - Unannotated tests are included with an empty item list.
 - A failing suite writes the report and retains ExUnit's non-zero exit status.
 - No application supervision setup is required.
-- The output directory is fixed in version 0.1.
+- The output directory is fixed in version 0.2.
 - Report names, assertion messages, and stacktraces may contain sensitive
   business or source information; review artifacts before publishing them.
+- Values passed to `show` are inspected into bounded strings, but may still
+  expose credentials or personal data. Show only artifact-safe values.
 
 ## Troubleshooting
 
@@ -107,7 +111,7 @@ Confirm that the test module has `use ExUnitAtlas` after its
 
 Add the standard ExUnit CLI formatter back to the formatter list.
 
-### A nested block raises `ArgumentError`
+### A nested item raises `ArgumentError`
 
 Nesting is intentionally unsupported. Use a linear sequence of sibling
-`step` and `check` blocks.
+`step`, `show`, and `check` items.

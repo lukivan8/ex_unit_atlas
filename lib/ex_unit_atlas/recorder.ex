@@ -18,6 +18,12 @@ defmodule ExUnitAtlas.Recorder do
     GenServer.call(__MODULE__, {:finish, owner, status, duration_us, error})
   end
 
+  def record_show(nil, _name, _value), do: :ok
+
+  def record_show(owner, name, value) do
+    GenServer.call(__MODULE__, {:show, owner, name, value})
+  end
+
   def take(owner, test_error \\ nil), do: GenServer.call(__MODULE__, {:take, owner, test_error})
   def reset, do: GenServer.call(__MODULE__, :reset)
   def state, do: GenServer.call(__MODULE__, :state)
@@ -51,6 +57,32 @@ defmodule ExUnitAtlas.Recorder do
 
       _ ->
         {:reply, :ok, state}
+    end
+  end
+
+  def handle_call({:show, owner, name, value}, _from, state) do
+    history = Map.get(state, owner, %{next_sequence: 0, items: [], open: nil})
+
+    if history.open do
+      {:reply, {:error, :nested}, state}
+    else
+      item = %{
+        sequence: history.next_sequence,
+        type: :show,
+        name: name,
+        value: value,
+        status: :passed,
+        duration_us: 0,
+        error: nil
+      }
+
+      history = %{
+        history
+        | next_sequence: history.next_sequence + 1,
+          items: [item | history.items]
+      }
+
+      {:reply, :ok, Map.put(state, owner, history)}
     end
   end
 

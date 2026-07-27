@@ -14,6 +14,8 @@ defmodule ExUnitAtlas.HTMLTest do
     assert html =~ "Technical details"
     assert html =~ "<h2>Sales</h2>"
     assert html =~ "Expected business rule"
+    assert html =~ "Sale after creation"
+    assert html =~ "%{id: 42, note: &quot;&lt;safe&gt;&quot;}"
     assert html =~ "Assertion failed"
     assert length(Regex.scan(~r/Assertion failed/, html)) == 1
     assert html =~ "test/example_test.exs:12"
@@ -25,6 +27,7 @@ defmodule ExUnitAtlas.HTMLTest do
       report_fixture()
       |> put_in(["tests", Access.at(0), "name"], "<script>alert('test')</script>")
       |> put_in(["tests", Access.at(0), "items", Access.at(0), "name"], "<b>unsafe</b>")
+      |> put_in(["tests", Access.at(0), "items", Access.at(1), "value"], "<script>data</script>")
       |> put_in(
         ["tests", Access.at(0), "items", Access.at(0), "error", "message"],
         "<img src=x>"
@@ -35,9 +38,11 @@ defmodule ExUnitAtlas.HTMLTest do
     refute html =~ "<script>"
     refute html =~ "<b>unsafe</b>"
     refute html =~ "<img src=x>"
+    refute html =~ "<script>data</script>"
     assert html =~ "&lt;script&gt;"
     assert html =~ "&lt;b&gt;unsafe&lt;/b&gt;"
     assert html =~ "&lt;img src=x&gt;"
+    assert html =~ "&lt;script&gt;data&lt;/script&gt;"
   end
 
   test "renders an empty suite and writes index.html atomically" do
@@ -81,6 +86,14 @@ defmodule ExUnitAtlas.HTMLTest do
               "status" => "failed",
               "duration_us" => 25,
               "error" => error
+            },
+            %{
+              "type" => "show",
+              "name" => "Sale after creation",
+              "value" => ~s(%{id: 42, note: "<safe>"}),
+              "status" => "passed",
+              "duration_us" => 0,
+              "error" => nil
             }
           ],
           "error" => [error]

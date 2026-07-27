@@ -1,7 +1,7 @@
 defmodule ExUnitAtlas.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @source_url "https://github.com/lukivan8/ex_unit_atlas"
 
   def project do
@@ -9,6 +9,7 @@ defmodule ExUnitAtlas.MixProject do
       app: :ex_unit_atlas,
       version: @version,
       elixir: "~> 1.14",
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       description: "Turn regular ExUnit tests into readable behavior reports",
       source_url: @source_url,
@@ -31,6 +32,9 @@ defmodule ExUnitAtlas.MixProject do
       {:ex_doc, "~> 0.31.0", only: :dev, runtime: false}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_env), do: ["lib"]
 
   defp package do
     [

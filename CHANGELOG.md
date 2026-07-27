@@ -5,7 +5,15 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
-## 0.1.0
+## 0.2.0 - 2026-07-27
+
+- Add pipe-friendly `show(value, label)` for recording intermediate data.
+- Limit inspected collections, strings, and final preview length.
+- Display shown values in JSON and static HTML reports.
+- Advance the report format to schema version 2.
+- Document sensitive-data risks and the choice not to intercept Logger output.
+
+## 0.1.0 - 2026-07-27
 
 First public release.
 

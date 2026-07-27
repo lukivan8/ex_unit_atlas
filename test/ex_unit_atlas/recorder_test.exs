@@ -63,4 +63,24 @@ defmodule ExUnitAtlas.RecorderTest do
 
     assert Recorder.state() == %{}
   end
+
+  test "orders show items with steps and checks" do
+    owner = {__MODULE__, :"test data flow"}
+
+    Recorder.start_item(owner, :step, "Create sale", System.monotonic_time())
+    Recorder.finish_item(owner, :passed, 10, nil)
+    Recorder.record_show(owner, "Created sale", "%{id: 42}")
+    Recorder.start_item(owner, :check, "Sale is completed", System.monotonic_time())
+    Recorder.finish_item(owner, :passed, 5, nil)
+
+    items = Recorder.take(owner)
+
+    assert Enum.map(items, &{&1.sequence, &1.type, &1.name}) == [
+             {0, :step, "Create sale"},
+             {1, :show, "Created sale"},
+             {2, :check, "Sale is completed"}
+           ]
+
+    assert Enum.at(items, 1).value == "%{id: 42}"
+  end
 end

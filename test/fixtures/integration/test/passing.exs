@@ -3,9 +3,14 @@ defmodule AtlasIntegrationFixture.AsyncA do
   use ExUnitAtlas
 
   test "same name" do
-    step "A1" do
-      AtlasIntegrationFixture.Barrier.arrive(:a)
-    end
+    result =
+      step "A1" do
+        AtlasIntegrationFixture.Barrier.arrive(:a)
+        %{owner: :a, stage: :prepared}
+      end
+      |> show("A data")
+
+    assert result.owner == :a
 
     check "A2" do
       assert true

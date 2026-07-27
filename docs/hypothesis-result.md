@@ -17,7 +17,7 @@ integration fixture.
 | Is the failure location clear? | Yes | A failed report contains the check name, assertion message, and user stacktrace frame. |
 | Is the report more useful than a list of test names? | Yes | One scenario can expose several distinct guarantees, especially for cash versus cashless behavior. |
 | Does the DSL force artificial fragmentation? | Sometimes | Wrapping trivial map literals can be noisy; only meaningful preparation or actions should become steps. |
-| Was `show/2` necessary? | No | Names and checks were sufficient for the tested business logic. |
+| Was `show/2` necessary? | Not initially | Names and checks were sufficient for the first sales rules; later complex data flows motivated an explicit bounded preview API. |
 
 ## Decision
 
@@ -32,3 +32,7 @@ The main product guidance derived from dogfooding is:
 
 Future features should preserve that small surface instead of turning Atlas
 into an assertion framework or general observability system.
+
+`show/2` was later added for intentional intermediate data. Logger interception
+remains out of scope because it is implicit, noisy, and harder to isolate in
+concurrent suites.

@@ -8,7 +8,7 @@ your application guarantees.
 
 It is not a new test framework. ExUnit remains responsible for tests,
 assertions, failures, stacktraces, terminal output, and exit codes. Atlas adds
-two small annotations—`step` and `check`—and generates:
+three small annotations—`step`, `show`, and `check`—and generates:
 
 ```text
 ex_unit_atlas_report/
@@ -31,6 +31,7 @@ ExUnit structure:
 | `describe` | behavior section |
 | `test` | scenario |
 | `step` | meaningful setup or action |
+| `show` | bounded preview of data flowing through the scenario |
 | `check` | named guarantee |
 | ExUnit result | scenario status |
 
@@ -44,7 +45,7 @@ Add Atlas as a test-only dependency:
 ```elixir
 def deps do
   [
-    {:ex_unit_atlas, "~> 0.1.0", only: :test, runtime: false}
+    {:ex_unit_atlas, "~> 0.2.0", only: :test, runtime: false}
   ]
 end
 ```
@@ -81,6 +82,7 @@ defmodule Shop.SaleTest do
         step "Create a completed cash sale" do
           %{payment_type: :cash, status: :completed}
         end
+        |> show("Created sale")
 
       check "The completed cash sale is eligible for fiscalization" do
         assert sale.payment_type == :cash
@@ -100,7 +102,28 @@ mix test
 Open `ex_unit_atlas_report/index.html` in a browser, or consume
 `ex_unit_atlas_report/report.json` from another tool.
 
-## Choosing useful steps and checks
+## Showing data as it flows
+
+`show/2` records a bounded `inspect` preview and returns the original value, so
+it fits naturally into pipelines:
+
+```elixir
+order
+|> calculate_totals()
+|> show("Order after totals")
+|> apply_discount()
+|> show("Order after discount")
+|> persist()
+```
+
+The report displays each preview between the surrounding steps and checks. It
+does not serialize the original term: collections, strings, and the final
+preview are limited to keep reports readable.
+
+Do not show credentials, tokens, personal data, or other secrets. Report files
+are often retained as CI artifacts.
+
+## Choosing useful annotations
 
 Use a `step` for preparation or an action that carries business meaning. Use a
 `check` to name a guarantee and keep regular `assert` and `refute` expressions
@@ -124,6 +147,7 @@ test code receives a label.
 
 - Instrumented blocks execute exactly once.
 - Their return values are returned unchanged.
+- `show` returns the exact input value and records only a bounded string preview.
 - `error`, `exit`, and `throw` retain their original reason and stacktrace.
 - Assertion messages and useful user frames remain visible.
 - Concurrent tests keep independent, ordered item streams.
@@ -134,10 +158,10 @@ test code receives a label.
 
 ## Current limitations
 
-- Nested `step` and `check` blocks are rejected.
+- Nested `step`, `show`, and `check` items are rejected.
 - The output directory is fixed to `ex_unit_atlas_report`.
-- Skipped and excluded tests are omitted from schema version 1.
-- Captured output and logs are not included.
+- Skipped and excluded tests are omitted from schema version 2.
+- Logger output is not captured; use `show` for intentional data previews.
 - Atlas does not automatically register its formatter.
 
 ## Documentation
