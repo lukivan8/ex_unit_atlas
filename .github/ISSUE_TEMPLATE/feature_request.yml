@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a focused improvement to behavior reporting
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is difficult or impossible for users today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Show the desired test API or report output when applicable.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Project constraints
+      options:
+        - label: The proposal preserves normal ExUnit failures and exit status.
+          required: true
+        - label: The proposal does not require a new assertion system.
+          required: true
+        - label: I searched existing issues for related proposals.
+          required: true

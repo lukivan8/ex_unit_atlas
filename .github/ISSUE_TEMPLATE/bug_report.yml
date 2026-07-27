@@ -1,0 +1,71 @@
+name: Bug report
+description: Report reproducible incorrect behavior in ExUnit Atlas
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Remove secrets and private application
+        data from reports and stacktraces before submitting.
+
+  - type: input
+    id: version
+    attributes:
+      label: ExUnit Atlas version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: runtime
+    attributes:
+      label: Elixir and OTP versions
+      description: Paste the relevant output from `elixir --version`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide a small test module or a repository that reproduces the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include sanitized CLI output or report excerpts when useful.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: async
+    attributes:
+      label: Does the reproduction use async tests?
+      options:
+        - "Yes"
+        - "No"
+        - "Unknown"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for duplicates.
+          required: true
+        - label: I removed secrets and private application data.
+          required: true

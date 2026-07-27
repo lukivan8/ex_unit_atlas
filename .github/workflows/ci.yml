@@ -1,0 +1,32 @@
+name: Quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Elixir 1.14 / OTP 25
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.14.4"
+          otp-version: "25"
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: MIX_ENV=test mix compile --warnings-as-errors
+      - run: mix test
+      - run: mix docs --warnings-as-errors
+      - run: mix hex.build

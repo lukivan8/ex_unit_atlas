@@ -1,0 +1,2 @@
+defmodule AtlasIntegrationFixture.EmptyModule do
+end

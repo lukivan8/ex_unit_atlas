@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-21T13:00:00Z",
+  "schema_version": 1,
+  "summary": {
+    "duration_us": 50,
+    "failed": 1,
+    "passed": 0,
+    "total": 1
+  },
+  "tests": [
+    {
+      "describe": null,
+      "duration_us": 50,
+      "error": [
+        {
+          "kind": "error",
+          "message": "Assertion with == failed",
+          "stacktrace": [
+            "test/failing.exs:7: (test)"
+          ]
+        }
+      ],
+      "file": "test/failing.exs",
+      "items": [
+        {
+          "duration_us": 10,
+          "error": {
+            "kind": "error",
+            "message": "Assertion with == failed",
+            "stacktrace": [
+              "test/failing.exs:7: (test)"
+            ]
+          },
+          "name": "Expected business rule",
+          "status": "failed",
+          "type": "check"
+        }
+      ],
+      "line": 5,
+      "module": "AtlasIntegrationFixture.FailingTest",
+      "name": "keeps assertion failure semantics",
+      "status": "failed"
+    }
+  ]
+}

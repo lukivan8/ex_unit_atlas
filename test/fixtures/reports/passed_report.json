@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-21T13:07:20Z",
+  "schema_version": 1,
+  "summary": {
+    "duration_us": 120,
+    "failed": 0,
+    "passed": 1,
+    "total": 1
+  },
+  "tests": [
+    {
+      "describe": null,
+      "duration_us": 120,
+      "error": null,
+      "file": "test/greenmag/business_logic/sale_test.exs",
+      "items": [
+        {
+          "duration_us": 8,
+          "error": null,
+          "name": "Configure fiscalization for cash payments only",
+          "status": "passed",
+          "type": "step"
+        },
+        {
+          "duration_us": 34,
+          "error": null,
+          "name": "Cash sales are fiscalized",
+          "status": "passed",
+          "type": "check"
+        },
+        {
+          "duration_us": 10,
+          "error": null,
+          "name": "Cashless sales are not fiscalized",
+          "status": "passed",
+          "type": "check"
+        }
+      ],
+      "line": 33,
+      "module": "Greenmag.BL.SaleTest",
+      "name": "only_cash fiscalizes only when there is cash payment",
+      "status": "passed"
+    }
+  ]
+}
