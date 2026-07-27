@@ -81,3 +81,14 @@ user-controlled strings are escaped.
 - Items remain ordered and isolated between async tests.
 - Reports are written after both successful and failed suites.
 - Generated files never contain arbitrary Elixir terms.
+
+## Dogfooding
+
+The repository registers `ExUnitAtlas.Formatter` in its own
+`test/test_helper.exs`. The scenario in `test/dogfood_test.exs` exercises
+`step`, `show`, and `check` as a consuming project would, and regenerates the
+root `ex_unit_atlas_report/` on every test run.
+
+This is intentionally separate from lower-level unit tests. It provides an
+executable public example while keeping recorder and formatter internals
+covered by focused tests.

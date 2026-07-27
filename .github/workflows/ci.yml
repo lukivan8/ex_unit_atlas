@@ -27,6 +27,20 @@ jobs:
       - run: mix deps.get
       - run: mix format --check-formatted
       - run: MIX_ENV=test mix compile --warnings-as-errors
-      - run: mix test
+      - name: Run test suite and generate Atlas report
+        run: mix test
+      - name: Verify generated Atlas report
+        if: ${{ !cancelled() }}
+        run: |
+          test -s ex_unit_atlas_report/report.json
+          test -s ex_unit_atlas_report/index.html
+      - name: Upload Atlas report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ex-unit-atlas-report
+          path: ex_unit_atlas_report/
+          if-no-files-found: error
+          retention-days: 14
       - run: mix docs --warnings-as-errors
       - run: mix hex.build

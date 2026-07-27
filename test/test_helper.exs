@@ -1,1 +1,6 @@
-ExUnit.start()
+ExUnit.start(
+  formatters: [
+    ExUnit.CLIFormatter,
+    ExUnitAtlas.Formatter
+  ]
+)

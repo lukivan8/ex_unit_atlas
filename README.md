@@ -1,10 +1,15 @@
 # ExUnit Atlas
 
 [![Quality](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/lukivan8/ex_unit_atlas/actions/workflows/ci.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/ex_unit_atlas.svg)](https://hex.pm/packages/ex_unit_atlas)
+[![HexDocs](https://img.shields.io/badge/HexDocs-documentation-blue.svg)](https://hexdocs.pm/ex_unit_atlas)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lukivan8/ex_unit_atlas/blob/main/LICENSE)
 
 ExUnit Atlas turns ordinary ExUnit tests into a readable map of the behavior
 your application guarantees.
+
+Published on [Hex.pm](https://hex.pm/packages/ex_unit_atlas) with API and guides
+available on [HexDocs](https://hexdocs.pm/ex_unit_atlas).
 
 It is not a new test framework. ExUnit remains responsible for tests,
 assertions, failures, stacktraces, terminal output, and exit codes. Atlas adds
@@ -142,6 +147,42 @@ end
 
 The report becomes valuable when names explain behavior—not when every line of
 test code receives a label.
+
+## Atlas documents itself
+
+ExUnit Atlas uses its own formatter and public API in
+[`test/dogfood_test.exs`](test/dogfood_test.exs). Running the repository's
+normal test suite regenerates a real Atlas report:
+
+```console
+mix test
+open ex_unit_atlas_report/index.html
+```
+
+The self-hosted scenario follows an order through a multi-stage calculation.
+Its report reads as:
+
+```text
+Public instrumentation API
+└─ ✓ follows an order through a multi-stage data flow
+   ├─ ✓ STEP   Create an order with two line items
+   ├─ ✓ DATA   Order before discount
+   │           %{items: [...], total: 4200, discount: 0}
+   ├─ ✓ STEP   Apply a ten percent discount
+   ├─ ✓ DATA   Order after discount
+   │           %{items: [...], total: 3780, discount: 420}
+   ├─ ✓ CHECK  The discount is recorded explicitly
+   ├─ ✓ CHECK  The final total includes the discount
+   └─ ✓ CHECK  The README example stays aligned with the executable scenario
+```
+
+The final check deliberately verifies the labels in this README, so the public
+example and executable scenario cannot drift silently.
+
+The CI workflow verifies both generated files and uploads
+`ex_unit_atlas_report/` as the `ex-unit-atlas-report` artifact for every
+non-cancelled run, including failed test suites that successfully finish
+report generation.
 
 ## Runtime semantics
 

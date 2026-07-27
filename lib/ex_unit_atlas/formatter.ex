@@ -20,17 +20,15 @@ defmodule ExUnitAtlas.Formatter do
 
   @impl true
   def init(_opts) do
-    case ExUnitAtlas.Recorder.start_link() do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, _pid}} -> ExUnitAtlas.Recorder.reset()
-    end
+    ensure_recorder()
+    reset_recorder()
 
     {:ok, %{tests: [], lifecycle: []}}
   end
 
   @impl true
   def handle_cast({:test_finished, %ExUnit.Test{} = test} = event, state) do
-    items = ExUnitAtlas.Recorder.take({test.module, test.name}, test.state)
+    items = take_items({test.module, test.name}, test.state)
 
     {:noreply,
      %{
@@ -45,12 +43,39 @@ defmodule ExUnitAtlas.Formatter do
     ExUnitAtlas.JSON.write!(report)
     ExUnitAtlas.HTML.write!(report)
 
-    ExUnitAtlas.Recorder.reset()
+    reset_recorder()
     {:noreply, %{state | lifecycle: [event_name(event) | state.lifecycle]}}
   end
 
   def handle_cast(event, state) do
     {:noreply, %{state | lifecycle: [event_name(event) | state.lifecycle]}}
+  end
+
+  defp take_items(owner, test_state) do
+    ensure_recorder()
+    ExUnitAtlas.Recorder.take(owner, test_state)
+  catch
+    :exit, _reason -> []
+  end
+
+  defp reset_recorder do
+    ensure_recorder()
+    ExUnitAtlas.Recorder.reset()
+  catch
+    :exit, _reason -> :ok
+  end
+
+  defp ensure_recorder do
+    case Process.whereis(ExUnitAtlas.Recorder) do
+      nil ->
+        case ExUnitAtlas.Recorder.start_link() do
+          {:ok, _pid} -> :ok
+          {:error, {:already_started, _pid}} -> :ok
+        end
+
+      _pid ->
+        :ok
+    end
   end
 
   defp event_name({name, _}), do: name
